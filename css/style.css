@@ -1,0 +1,68 @@
+.gameSpace{
+	display: flex;
+	justify-content: center;
+}
+
+.board{
+	display: flex;
+	flex-wrap: wrap;
+	margin: 0;
+	padding: 0;
+}
+
+.field{
+	background-color: gray;
+	border: 1px solid pink;
+	box-sizing: border-box;
+	position: relative;
+}
+
+.field__content{
+	display: none;
+}
+
+.field--exploded{
+	background-color: red;
+}
+
+.field--safe{
+	background-color: blue;
+}
+
+.field--nearMine{
+	background-color: green;
+}
+
+.field--image{
+	top: 0;
+	position: absolute;
+	left: 0;
+	object-fit: contain;
+	height: 100%;
+	width: 100%;
+}
+
+@media only screen and (orientation: landscape){
+	.field{
+		height: 9vh;
+		width: 9vh;
+	}
+
+
+	.board{
+		height: 81vh;
+		width: 81vh;
+	}
+}
+
+@media only screen and (orientation: portrait){
+	.field{
+		height: 9vw;
+		width: 9vw;
+	}
+
+	.board{
+		height: 81vw;
+		width: 81vw;
+	}
+}
