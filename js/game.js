@@ -1,63 +1,120 @@
+
+const GAME_IDS = {
+	BOARD: "gameBoard"
+}
+
 const GAME_CLASSES = {
 	MINE: {
 		DEFAULT: "field",
 		EXPLODED:"field--exploded",
 		SAFE:"field--safe",
 		NEAR:"field--nearMine",
-		CONTENT: "field__content"
+		CONTENT: "field__content",
+		IMAGE: "field__image",
+		HIDDEN: "field__image--hidden"
 	}
 };
 
-const GAME_IDS = {
-	BOARD: "gameBoard"
+const GAME_PATHS = {
+	BOMB: "images/bomb.svg"
+}
+
+const GAME_PROPERTIES ={
+	STANDARD: {
+		Y_LIMIT : 9,
+		X_LIMIT : 9,
+		MINES : 10,
+	}
 }
 
 class Field {
 	constructor(fieldProperties){
-		this.isMined = false;
-		this.minesAround = 0;
+
+		this.explode = this.getExplode();
 		this.position = {
 			x: fieldProperties.positionX,
 			y: fieldProperties.positionY
 		};
+		this.DOMContent = {};
+
+		this.isMined = false;
 		this.isExplored = false;
-		
-		this.explode = () => {
+		this.minesAround = 0;
+		this.DOM = this.createDOMElement();
+	}
+
+	getExplode(){
+		return () => {
 			this.getIsMined()? this.revealField() : gameBoard.openAllAvailableFields(this.getPosition());
-		}
-		this.DOMContent = "";
-		this.DOM = this.createDOMElement(fieldProperties);
+		};
 	}
 
 	getDOM(){
+
 		return this.DOM;
 	}
 
+	getDOMContent(){
+
+		return this.DOMContent;
+	}
+
 	getIsMined() {
+
 		return this.isMined;
 	}
 
 	getMinesAround(){
+
 		return this.minesAround;
 	}
 
+	getIsExplored(){
+
+		return this.isExplored;
+	}
+
+	getPosition(){
+
+		return this.position;
+	}
+
 	setMinesAround(minesAround){
+
 		this.minesAround = this.minesAround >= 0 ? minesAround : -1;
 	}
 
+	setIsMined(isMined){
+
+		this.isMined = isMined;
+	}
+
+	setIsExplored(isExplored){
+
+		this.isExplored = isExplored;
+	}
+
+	setDOMContent(newContent){
+		this.clearDOMContent();
+		this.DOM.appendChild(newContent);
+		this.DOMContent = newContent;
+	}
+
+	clearDOMContent(){
+
+		this.DOMContent.remove();
+	}
+
 	increaseMineAroundCounter(){
-		if (!this.getIsMined()){
+		if (this.getIsMined()){
+			return ;
+		} else {
 			let currentMines = this.getMinesAround();
 			this.setMinesAround(currentMines + 1);			
 		}
 	}
 
-	setIsMined(isMined){
-		this.isMined = isMined;
-	}
-
-
-	setFieldToMined(){
+	mineTheField(){
 		if(this.getIsMined()){
 			return false;
 		} else {
@@ -67,47 +124,34 @@ class Field {
 		}
 	}
 
-	getIsExplored(){
-		return this.isExplored;
-	}
-
-	setIsExplored(isExplored){
-		this.isExplored = isExplored;
-	}
-
 	revealField(){
-		let position = this.getPosition();
 		this.DOM.removeEventListener('click', this.explode);
 		this.setIsExplored(true);
-		let isMined = this.getIsMined() 
+		let isMined = this.getIsMined(); 
 		isMined ? this.minedField() : this.safeField();
 	}
 
 	safeField(){
 		this.changeStyle(this.getDOM(), GAME_CLASSES.MINE.SAFE);
-		this.changeStyle(this.DOMContent, GAME_CLASSES.MINE.CONTENT);
-		console.log("oh yeah"); // debug
-	}
-
-	getPosition(){
-		return this.position;
+		this.changeStyle(this.getDOMContent(), GAME_CLASSES.MINE.CONTENT);
 	}
 
 	minedField(){
+		this.changeStyle(this.getDOMContent(), GAME_CLASSES.MINE.HIDDEN);
 		this.changeStyle(this.getDOM(), GAME_CLASSES.MINE.EXPLODED);
-		this.changeStyle(this.DOMContent, GAME_CLASSES.MINE.CONTENT);
-		console.log("oh no!"); // debug
 		// engGame();
 	}
 
 	changeStyle(element, newClass){
+
 		element.classList.toggle(newClass);
 	}
 
-	createDOMElement(fieldProperties){
+	createDOMElement(){
 		let field = document.createElement("div");
 		field.classList.add(GAME_CLASSES.MINE.DEFAULT);
 		field.addEventListener('click', this.explode);
+		field.addEventListener('contextmenu', this.setFlag.bind(this), false);
 
 		let fieldContent = document.createElement("div");
 		fieldContent.classList.add(GAME_CLASSES.MINE.CONTENT);
@@ -116,34 +160,56 @@ class Field {
 		return field;
 	}
 
+	setFlag(event){
+		event.preventDefault();
+			this.explode();
+			return false;
+	}
+
 	createFieldContent(){
-		this.getIsMined() ? this.createBombImage() : this.createMinesAroundText();
+
+		this.getIsMined() ? this.updateFieldWithBomb() : this.createMinesAroundText();
+	}
+
+	updateFieldWithBomb(){
+		let bomb = this.createBombImage();
+		this.setDOMContent(bomb);
 	}
 
 	createBombImage(){
 		let image = document.createElement("img");
-		image.src = "images/bomb.svg";
-		image.classList.add("field--image");
-		this.DOM.appendChild(image);
+		image.src = GAME_PATHS.BOMB;
+		image.classList.add(GAME_CLASSES.MINE.IMAGE);
+		image.classList.add(GAME_CLASSES.MINE.HIDDEN);
+		return image;
 	}
 
 	createMinesAroundText(){
-		this.DOMContent.textContent = this.getMinesAround();
+
+		this.updateTextContent(this.getMinesAround());
+	}
+
+	updateTextContent(text){
+
+		this.DOMContent.textContent = text;
 	}
 
 }
 
 class Board {
 	constructor (boardProperties){
-		this.fieldCells = this.mineTheField(this.createFields());
+
+		this.fieldCells = this.createFields();
+		this.fieldCells = this.mineFields(this.fieldCells);
 	}
 
 	getFieldCells(){
+
 		return this.fieldCells
 	}
 
 	getCell(x,y){
-		let outOfBorder = x < 0 || x > 8 || y < 0 || y > 8;
+		let outOfBorder = x < 0 || x >= GAME_PROPERTIES.STANDARD.X_LIMIT || y < 0 || y >= GAME_PROPERTIES.STANDARD.Y_LIMIT;
 		if (outOfBorder){
 			return null;
 		} else {
@@ -156,24 +222,24 @@ class Board {
 		let cells = [];
 		let domBoard = document.getElementById(GAME_IDS.BOARD);
 
-		for (let j=0; j < 9; j++){
+		for (let y=0; y < GAME_PROPERTIES.STANDARD.Y_LIMIT; y++){
 			cells.push([]);
-			for (let i=0; i < 9; i++){
-				let field = new Field({positionX: i, positionY: j});
-				cells[j].push(field);
+			for (let x=0; x < GAME_PROPERTIES.STANDARD.X_LIMIT; x++){
+				let field = new Field({positionX: x, positionY: y});
+				cells[y].push(field);
 				domBoard.appendChild(field.getDOM());
 			}
 		}
 		return cells;
 	}
 
-	mineTheField(fields){
+	mineFields(fields){
 		let minedFields = 0;
-		while (minedFields < 10){
-			let x = Math.floor(Math.random() * 9);
-			let y = Math.floor(Math.random() * 9);
+		while (minedFields < GAME_PROPERTIES.STANDARD.MINES){
+			let x = Math.floor(Math.random() * GAME_PROPERTIES.STANDARD.X_LIMIT);
+			let y = Math.floor(Math.random() * GAME_PROPERTIES.STANDARD.Y_LIMIT);
 
-			if (fields[y][x].setFieldToMined()){
+			if (fields[y][x].mineTheField()){
 				minedFields++;
 				this.setNeighboursWarnings(x,y,fields);
 			}			
@@ -186,7 +252,8 @@ class Board {
 			for (let j = -1; j < 2; j++){
 				let neighbourX = x + i;
 				let neighbourY = y + j;
-				if ((neighbourX >= 0 && neighbourX <= 8) && (neighbourY >= 0 && neighbourY <=8)){
+				let cell = this.getCell(neighbourX, neighbourY);
+				if (cell){
 					fields[neighbourY][neighbourX].increaseMineAroundCounter();
 					fields[neighbourY][neighbourX].createFieldContent();
 				}

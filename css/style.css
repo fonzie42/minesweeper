@@ -33,13 +33,17 @@
 	background-color: green;
 }
 
-.field--image{
+.field__image{
 	top: 0;
 	position: absolute;
 	left: 0;
 	object-fit: contain;
 	height: 100%;
 	width: 100%;
+}
+
+.field__image--hidden{
+	display: none;
 }
 
 @media only screen and (orientation: landscape){
