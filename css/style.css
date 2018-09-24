@@ -11,10 +11,15 @@
 }
 
 .field{
-	background-color: gray;
-	border: 1px solid pink;
+	background-color: #f5f5f5;
+	border: 1px solid #aaaaaa;
 	box-sizing: border-box;
 	position: relative;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 2em;
+	font-family: monospace;
 }
 
 .field__content{
@@ -26,11 +31,11 @@
 }
 
 .field--safe{
-	background-color: blue;
+	background-color: #87cdca;
 }
 
-.field--nearMine{
-	background-color: green;
+.field--safeNumber{
+	background-color: #eaa87c;
 }
 
 .field__image{
