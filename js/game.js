@@ -1,6 +1,6 @@
 
 const GAME_IDS = {
-	BOARD: "gameBoard"
+	BOARD: "gameSpace"
 }
 
 const GAME_CLASSES = {
@@ -12,7 +12,9 @@ const GAME_CLASSES = {
 		NEAR:"field--nearMine",
 		CONTENT: "field__content",
 		IMAGE: "field__image"
-	}
+	},
+
+	BOARD: "gameSpace__board"
 };
 
 const GAME_PATHS = {
@@ -136,27 +138,17 @@ class Field {
 
 	safeField(){
 		let style = this.getMinesAround() == 0 ? GAME_CLASSES.MINE.SAFE : GAME_CLASSES.MINE.NUMBER_SAFE;
-		this.addStyle(this.getDOM(), style);
+		addStyle(this.getDOM(), style);
 	}
 
 	minedField(){
-		this.addStyle(this.getDOM(), GAME_CLASSES.MINE.EXPLODED);
-		// engGame();
-	}
-
-	addStyle(element, style){
-
-		element.classList.add(style);
-	}
-
-	changeStyle(element, newClass){
-
-		element.classList.toggle(newClass);
+		addStyle(this.getDOM(), GAME_CLASSES.MINE.EXPLODED);
 	}
 
 	createDOMElement(){
 		let field = document.createElement("div");
 		field.classList.add(GAME_CLASSES.MINE.DEFAULT);
+		field.classList.add("confetti-button");
 		field.addEventListener('click', this.explode);
 		field.addEventListener('contextmenu', this.setFlag.bind(this), false);
 
@@ -209,6 +201,7 @@ class Field {
 
 class Board {
 	constructor (boardProperties){
+		this.DOMGameBoard = this.createDOMGameSpace();
 		this.minedFields = [];
 		this.fieldCells = this.createFields();
 		this.fieldCells = this.mineFields(this.fieldCells);
@@ -229,13 +222,25 @@ class Board {
 		}
 	}
 
+	getDOMBoard(){
+		return this.DOMGameBoard;
+	}
+
 	pushMinedField(field){
 		this.minedFields.push(field);
 	}
 
+	createDOMGameSpace(){
+		let main = document.getElementById(GAME_IDS.BOARD);
+		let gameBoard = document.createElement("div");
+		addStyle(gameBoard, GAME_CLASSES.BOARD);
+		main.appendChild(gameBoard);
+		return gameBoard;      
+	}
+
 	createFields(size){
 		let cells = [];
-		let domBoard = document.getElementById(GAME_IDS.BOARD);
+		let domBoard = this.getDOMBoard();
 
 		for (let y=0; y < GAME_PROPERTIES.STANDARD.Y_LIMIT; y++){
 			cells.push([]);
@@ -354,8 +359,12 @@ class Game {
 		this.endGame();
 	}
 
+	clearDOMBoard(){
+		let board = this.getGameBoard();
+		board.getDOMBoard().remove();
+	}
+
 	endGame(){
-		console.log("game over");
 		let board = this.getGameBoard();
 		let mines = board.minedFields;
 		for (let i = 0; i < 9; i++){
@@ -363,8 +372,63 @@ class Game {
 			currentGame.board.fieldCells[i][j].revealField();
 			}
 		}
+
+		var classname = document.getElementById("newGame");
+		changeStyle(classname, "pulsingButton");
 	}
 
 }
 
-let currentGame = new Game();
+function addStyle(element, style){
+
+	element.classList.add(style);
+}
+
+function changeStyle(element, newClass){
+
+	element.classList.toggle(newClass);
+}
+
+function newGame(){
+	currentGame.clearDOMBoard();
+	currentGame = new Game();
+	updateButtonStyle();
+}
+
+
+function updateButtonStyle(){
+	var classname = document.getElementsByClassName("confetti-button");
+
+		    for (var i = 0; i < classname.length; i++) {
+		    	if (classname[i].classList.contains("pulsingButton")){
+		      changeStyle(classname[i], "pulsingButton");
+		    		
+		    	}
+		    }
+}
+
+
+let currentGame;
+(function initGame(){
+	currentGame = new Game();
+	var classname = document.getElementsByClassName("confetti-button");
+	
+	var animateButton = function(e) {
+
+        e.preventDefault;
+        //reset animation
+        e.target.classList.remove('animate');
+
+        e.target.classList.add('animate');
+        setTimeout(function(){
+        e.target.classList.remove('animate');
+        },300);
+    };
+
+    for (var i = 0; i < classname.length; i++) {
+      classname[i].addEventListener('click', animateButton, false);
+    }
+    
+}());
+
+
