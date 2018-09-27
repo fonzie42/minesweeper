@@ -1,5 +1,5 @@
 
-.confetti-button {
+.confetti-effect {
 
   margin: auto;
   padding: .3em;
@@ -22,9 +22,9 @@
   box-shadow: 0 2px 25px #ffb3e6;
 }
 
-.confetti-button:focus { outline: 0; }
+.confetti-effect:focus { outline: 0; }
 
-.confetti-button:before, .confetti-button:after {
+.confetti-effect:before, .confetti-effect:after {
   position: absolute;
   content: '';
   display: block;
@@ -36,32 +36,32 @@
   background-repeat: no-repeat;
 }
 
-.confetti-button:before {
+.confetti-effect:before {
   display: none;
   top: -75%;
   background-image: radial-gradient(circle, #ffccf2 20%, transparent 20%), radial-gradient(circle, transparent 20%, #ffccf2 20%, transparent 30%), radial-gradient(circle, #ffccf2 20%, transparent 20%), radial-gradient(circle, #ffccf2 20%, transparent 20%), radial-gradient(circle, transparent 10%, #ffccf2 15%, transparent 20%), radial-gradient(circle, #ffccf2 20%, transparent 20%), radial-gradient(circle, #ffccf2 20%, transparent 20%), radial-gradient(circle, #ffccf2 20%, transparent 20%), radial-gradient(circle, #ffccf2 20%, transparent 20%);
   background-size: 10% 10%, 20% 20%, 15% 15%, 20% 20%, 18% 18%, 10% 10%, 15% 15%, 10% 10%, 18% 18%;
 }
 
-.confetti-button:after {
+.confetti-effect:after {
   display: none;
   bottom: -75%;
   background-image: radial-gradient(circle, #ff66d9 20%, transparent 20%), radial-gradient(circle, #ff66d9 20%, transparent 20%), radial-gradient(circle, transparent 10%, #ff66d9 15%, transparent 20%), radial-gradient(circle, #ff66d9 20%, transparent 20%), radial-gradient(circle, #ff66d9 20%, transparent 20%), radial-gradient(circle, #ff66d9 20%, transparent 20%), radial-gradient(circle, #ff66d9 20%, transparent 20%);
   background-size: 15% 15%, 20% 20%, 18% 18%, 20% 20%, 15% 15%, 10% 10%, 20% 20%;
 }
 
-.confetti-button:active {
+.confetti-effect:active {
   transform: scale(0.9);
   background-color: #990073;
   box-shadow: 0 2px 25px #ffb3e6;
 }
 
-.confetti-button.animate:before {
+.confetti-effect.animate:before {
   display: block;
   animation: topBubbles ease-in-out 0.75s forwards;
 }
 
-.confetti-button.animate:after {
+.confetti-effect.animate:after {
   display: block;
   animation: bottomBubbles ease-in-out 0.75s forwards;
 }
@@ -94,7 +94,7 @@
         }
     }
 
-.confetti-button.selected{
+.confetti-effect.selected{
   height : 75%;
   width  : 90%;
   font-size: 3vh;
@@ -106,7 +106,7 @@
 }
 
 
-.pulsingButton{
+.pulsing-button{
     -webkit-animation : pulse 1.25s infinite cubic-bezier(0.66, 0, 0, 1);
     -moz-animation    : pulse 1.25s infinite cubic-bezier(0.66, 0, 0, 1);
     -ms-animation     : pulse 1.25s infinite cubic-bezier(0.66, 0, 0, 1);
@@ -178,9 +178,42 @@ body{
 	background-color: #FBAED2;
 }
 
-.field--safeNumber{
+.field__safeNumber{
 	background-color: #fb607f;
 }
+
+.field__safeNumber--1{
+	background-color: #fc829b;
+}
+
+.field__safeNumber--2{
+	background-color: #fb5173;
+}
+
+.field__safeNumber--3{
+	background-color: #fa1f4a;
+}
+
+.field__safeNumber--4{
+	background-color: #e00531;
+}
+
+.field__safeNumber--5{
+	background-color: #ae0426;
+}
+
+.field__safeNumber--6{
+	background-color: #7d031b;
+}
+
+.field__safeNumber--7{
+	background-color: #4b0210;
+}
+
+.field__safeNumber--8{
+	background-color: #190105;
+}
+
 
 .field__image{
 	top: 0;
@@ -193,6 +226,10 @@ body{
 
 .field__image--hidden{
 	display: none;
+}
+
+.green{
+	background-color: green;
 }
 
 @media only screen and (orientation: landscape){

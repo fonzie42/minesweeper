@@ -8,8 +8,7 @@ const GAME_CLASSES = {
 		DEFAULT: "field",
 		EXPLODED:"field--exploded",
 		SAFE:"field--safe",
-		NUMBER_SAFE:"field--safeNumber",
-		NEAR:"field--nearMine",
+		NUMBER_SAFE:"field__safeNumber",
 		CONTENT: "field__content",
 		IMAGE: "field__image"
 	},
@@ -26,6 +25,10 @@ const GAME_PROPERTIES ={
 		Y_LIMIT : 9,
 		X_LIMIT : 9,
 		MINES : 10,
+		TIME: {
+			minutes: 0,
+			seconds: 10
+		}
 	}
 }
 
@@ -137,8 +140,16 @@ class Field {
 	}
 
 	safeField(){
-		let style = this.getMinesAround() == 0 ? GAME_CLASSES.MINE.SAFE : GAME_CLASSES.MINE.NUMBER_SAFE;
-		addStyle(this.getDOM(), style);
+		let fieldDOM = this.getDOM();
+		addStyle(fieldDOM, GAME_CLASSES.MINE.SAFE);
+
+		let style = this.getStyleByMinesAround();
+		addStyle(fieldDOM, style);
+	}
+
+	getStyleByMinesAround(){
+		let mines = this.getMinesAround();
+		return mines > 0 ? GAME_CLASSES.MINE.NUMBER_SAFE + "--" + mines : "";
 	}
 
 	minedField(){
@@ -148,7 +159,7 @@ class Field {
 	createDOMElement(){
 		let field = document.createElement("div");
 		field.classList.add(GAME_CLASSES.MINE.DEFAULT);
-		field.classList.add("confetti-button");
+		field.classList.add("confetti-effect");
 		field.addEventListener('click', this.explode);
 		field.addEventListener('contextmenu', this.setFlag.bind(this), false);
 
@@ -210,6 +221,10 @@ class Board {
 	getFieldCells(){
 
 		return this.fieldCells
+	}
+
+	getMinedFields(){
+		return this.minedFields;
 	}
 
 	getCell(x,y){
@@ -285,7 +300,7 @@ class Board {
 		let x = currentPosition.x;
 		let y = currentPosition.y;
 		let cell = this.getCell(x,y);
-		if(!cell || cell.getIsExplored() || cell.getIsMined()){
+		if( !cell || cell.getIsExplored() || cell.getIsMined() ){
 			return 0;
 		} else {
 			cell.revealField();
@@ -295,7 +310,6 @@ class Board {
 				openFields = openFields + this.openAllAvailableFields({x:x-1, y:y}); // east
 				openFields = openFields + this.openAllAvailableFields({x:x, y:y-1}); // south
 				openFields = openFields + this.openAllAvailableFields({x:x, y:y+1}); // west
-
 				openFields = openFields + this.openAllAvailableFields({x:x+1, y:y+1});
 				openFields = openFields + this.openAllAvailableFields({x:x-1, y:y+1});
 				openFields = openFields + this.openAllAvailableFields({x:x-1, y:y-1});
@@ -304,20 +318,29 @@ class Board {
 			return openFields;
 		}
 	}
+
+	cheatWithNoShameAndShowAllBombs(){
+		let mines = this.getMinedFields();
+		for (let bomb of mines){
+			changeStyle(bomb.getDOM(), "green");
+		}
+	}
 }
 
 class Game {
 	constructor(){
 		this.remainingFields = 81;
+		this.totalTimeInSeconds = GAME_PROPERTIES.STANDARD.TIME; 
 		this.board = new Board();
 		this.isGameOver = false;
+		this.fieldAvailable = GAME_PROPERTIES.STANDARD.Y_LIMIT * GAME_PROPERTIES.STANDARD.X_LIMIT - GAME_PROPERTIES.STANDARD.MINES;
 	}
 
 	decreaseRemainingFields(openedFields){
-		
-		this.openFields = this.openFields - openedFields;
-		if (this.openFields <= 0){
+		this.fieldAvailable = this.fieldAvailable - openedFields;
+		if (this.fieldAvailable <= 0){
 			this.setGameOver(true);
+			console.log("you won!");
 		}
 	}
 
@@ -347,14 +370,15 @@ class Game {
 
 		 let openedFields = board.openAllAvailableFields(position);
 		 this.decreaseRemainingFields(openedFields);
+
 		 if (this.getIsGameOver()){
 		 	this.endGame();
 		 }
-
 	}
 
 	bombThePlaceDown(field){
 	 	this.setGameOver(true);
+	 	console.log("you lost :c");
 		field.revealField();
 		this.endGame();
 	}
@@ -374,13 +398,13 @@ class Game {
 		}
 
 		var classname = document.getElementById("newGame");
-		changeStyle(classname, "pulsingButton");
+		changeStyle(classname, "pulsing-button");
 	}
 
 }
 
 function addStyle(element, style){
-
+	if(style == "") {return;}
 	element.classList.add(style);
 }
 
@@ -389,35 +413,78 @@ function changeStyle(element, newClass){
 	element.classList.toggle(newClass);
 }
 
-function newGame(){
-	currentGame.clearDOMBoard();
-	currentGame = new Game();
-	updateButtonStyle();
-}
-
-
 function updateButtonStyle(){
-	var classname = document.getElementsByClassName("confetti-button");
+	var classname = document.getElementsByClassName("confetti-effect");
 
-		    for (var i = 0; i < classname.length; i++) {
-		    	if (classname[i].classList.contains("pulsingButton")){
-		      changeStyle(classname[i], "pulsingButton");
-		    		
-		    	}
-		    }
+    for (var i = 0; i < classname.length; i++) {
+    	if (classname[i].classList.contains("pulsing-button")){
+      changeStyle(classname[i], "pulsing-button");
+    		
+    	}
+    }
 }
 
 
 let currentGame;
+let remainingTime = {minutes: 0, seconds: 0};
+let totalTime = {minutes: 0, seconds: 0};
+
+function countDownTimer(){
+	return remainingTime.seconds === 0 ? decreaseAMinute(remainingTime) : decreaseASecond(remainingTime);
+}
+
+function decreaseAMinute(timeStructure){
+	if(timeStructure.minutes == 0){return;}
+	--timeStructure.minutes;
+	timeStructure.seconds = 59;
+	return timeStructure;
+}
+
+function decreaseASecond(timeStructure){
+	--timeStructure.seconds;
+	return timeStructure;
+}
+
+function increaseASecond(timeStructure){
+	timeStructure.seconds == 60 ? increaseAMinute(timeStructure) : ++timeStructure.seconds;
+	return timeStructure;
+}
+
+function increaseAMinute(timeStructure){
+	timeStructure.seconds = 0;
+	++timeStructure.minutes;
+	return timeStructure;
+}
+
+function dealWithTimers(){
+	remainingTime = countDownTimer(remainingTime);
+	document.getElementById("countdown").innerText = remainingTime.minutes + ":" + remainingTime.seconds;
+
+	totalTime = increaseASecond(totalTime);
+	document.getElementById("totalTime").innerText = totalTime.minutes + ":" + totalTime.seconds;
+}
+
+
+
+function newGame(){
+	currentGame.clearDOMBoard();
+	//clearInterval(dealWithTimers);
+	currentGame = new Game();
+	remainingTime = currentGame.totalTimeInSeconds;
+	totalTime = {minutes: 0, seconds: 0};
+	//setInterval(dealWithTimers, 1000);
+	updateButtonStyle();
+}
+
 (function initGame(){
 	currentGame = new Game();
-	var classname = document.getElementsByClassName("confetti-button");
+	remainingTime = currentGame.totalTimeInSeconds;
+	setInterval(dealWithTimers, 1000);
+	var classname = document.getElementsByClassName("confetti-effect");
 	
 	var animateButton = function(e) {
 
-        e.preventDefault;
-        //reset animation
-        e.target.classList.remove('animate');
+        e.target.classList.remove('animate')
 
         e.target.classList.add('animate');
         setTimeout(function(){
