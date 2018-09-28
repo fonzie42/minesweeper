@@ -140,7 +140,17 @@ body{
 	flex-direction: column;
 }
 
+.timer{
+	display: flex;
+    height: 2em;
+    justify-content: space-around;
+    width: 50%;
+}
 
+.gameInfo{
+	display: flex;
+	flex-direction: row;
+}
 
 .gameSpace{
 	display: flex;

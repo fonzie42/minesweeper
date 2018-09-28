@@ -428,13 +428,31 @@ function updateButtonStyle(){
 let currentGame;
 let remainingTime = {minutes: 0, seconds: 0};
 let totalTime = {minutes: 0, seconds: 0};
+let countDownHandler;
+let timeCounterHandler;
 
 function countDownTimer(){
-	return remainingTime.seconds === 0 ? decreaseAMinute(remainingTime) : decreaseASecond(remainingTime);
+	remainingTime = remainingTime.seconds === 0 ? decreaseAMinute(remainingTime) : decreaseASecond(remainingTime);
+	let text = parseTimeStructureToText(remainingTime);
+	document.getElementById("countdown").innerText = text;
+}
+
+function countUpTimer(){
+	totalTime = increaseASecond(totalTime);
+	let text = parseTimeStructureToText(totalTime);
+	document.getElementById("totalTime").innerText = text;
+}
+
+function parseTimeStructureToText(timeStructure){
+	let seconds = timeStructure.seconds < 10 ? "0" + timeStructure.seconds : timeStructure.seconds;
+	let minutes = timeStructure.minutes < 10 ? "0" + timeStructure.minutes : timeStructure.minutes;
+	return `${minutes}:${seconds}`;
 }
 
 function decreaseAMinute(timeStructure){
-	if(timeStructure.minutes == 0){return;}
+	if(timeStructure.minutes == 0){
+		clearInterval(countDownHandler);
+		return timeStructure;}
 	--timeStructure.minutes;
 	timeStructure.seconds = 59;
 	return timeStructure;
@@ -456,30 +474,33 @@ function increaseAMinute(timeStructure){
 	return timeStructure;
 }
 
-function dealWithTimers(){
-	remainingTime = countDownTimer(remainingTime);
-	document.getElementById("countdown").innerText = remainingTime.minutes + ":" + remainingTime.seconds;
-
-	totalTime = increaseASecond(totalTime);
-	document.getElementById("totalTime").innerText = totalTime.minutes + ":" + totalTime.seconds;
-}
 
 
 
 function newGame(){
-	currentGame.clearDOMBoard();
+	if(currentGame){currentGame.clearDOMBoard()};
 	//clearInterval(dealWithTimers);
 	currentGame = new Game();
-	remainingTime = currentGame.totalTimeInSeconds;
+
+
+	clearInterval(countDownHandler);
+	clearInterval(timeCounterHandler);
+
+	remainingTime = {minutes: 3, seconds: 30};
 	totalTime = {minutes: 0, seconds: 0};
-	//setInterval(dealWithTimers, 1000);
+
+	countDownHandler = setInterval(countDownTimer, 1000);
+	timeCounterHandler = setInterval(countUpTimer, 1000);
+
 	updateButtonStyle();
+
+
 }
 
 (function initGame(){
-	currentGame = new Game();
-	remainingTime = currentGame.totalTimeInSeconds;
-	setInterval(dealWithTimers, 1000);
+	newGame();
+
+	
 	var classname = document.getElementsByClassName("confetti-effect");
 	
 	var animateButton = function(e) {
